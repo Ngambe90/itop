@@ -1,0 +1,63 @@
+version: "3.3"
+services:
+   db:
+    image: elestio/mysql:8.0
+    container_name: bd_service
+    restart: always
+    stdin_open: true
+    ports:
+    - 5000:3306
+    environment:
+    - MYSQL_ROOT_PASSWORD=itop1234
+    - MYSQL_DATABASE=bd_itop
+    - MYSQL_USER=user_itop
+    - MYSQL_PASSWORD=Itop@
+    volumes:
+    - ./storage/mysql:/var/lib/mysql
+
+   itop:
+    image: elestio/itop:latest
+    container_name: itop_service
+    restart: always
+    stdin_open: true
+    environment:
+    - ITOP_DB_HOST=db
+    - ITOP_DB_NAME=bd_itop
+    - ITOP_DB_USER=user_itop
+    - ITOP_DB_PASS=Itop@
+    - PHP_ENABLE_UPLOADS=on
+    - PHP_MEMORY_LIMIT=256M
+    - PHP_POST_MAX_SIZE=10M
+    - PHP_UPLOAD_MAX_FILESIZE=8M
+    - PHP_MAX_FILE_UPLOADS=20
+    - PHP_MAX_INPUT_TIME=300
+    - PHP_LOG_ERRORS=on
+    - PHP_ERROR_REPORTING=E_ALL
+    depends_on:
+    - db
+    ports:
+    - 9500:80
+    volumes:
+    - ./storage/itop/conf:/var/www/itop/conf
+    - ./storage/itop/data:/var/www/itop/data
+    - ./storage/itop/log:/var/www/itop/log
+    - ./storage/itop/env-production:/var/www/itop/env-production
+    - ./storage/itop/env-production-build:/var/www/itop/env-production-build
+    - ./storage/extensions:/var/www/itop/extensions
+
+   pma:
+    image: phpmyadmin
+    container_name: myadmin_service
+    restart: always
+    ports:
+    - 8111:80
+    environment:
+     PMA_HOST: db
+     PMA_PORT: 3306
+     PMA_USER: root
+     PMA_PASSWORD: Itop@
+     UPLOAD_LIMIT: 500M
+     MYSQL_USERNAME: root
+     MYSQL_ROOT_PASSWORD: itop1234
+    depends_on:
+    - db
